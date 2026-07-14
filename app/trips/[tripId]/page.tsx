@@ -112,15 +112,70 @@ export default function TripDetailPage() {
   }
 
   async function handleRemoveMember(userId: string) {
-    if (!confirm('Keluarkan anggota ini dari trip? Semua pengeluaran yang mereka bayar dan tagihan (split) mereka akan ikut terhapus permanen!')) return;
+    if (!confirm('Keluarkan anggota ini dari trip? Semua pengeluaran yang mereka bayar akan dihapus, dan tagihan (split) mereka akan dibebankan ke anggota yang tersisa!')) return;
     
     setRemovingMember(userId)
 
     // 1. Ambil semua expense_id di trip ini
-    const { data: tripExpenses } = await supabase.from('expenses').select('id').eq('trip_id', tripId)
+    const { data: tripExpenses } = await supabase.from('expenses').select('id, amount').eq('trip_id', tripId)
     const expenseIds = tripExpenses?.map(e => e.id) || []
 
     if (expenseIds.length > 0) {
+      // Cari expenses di mana user ini ikut patungan (split)
+      const { data: userSplits } = await supabase.from('expense_splits').select('expense_id').eq('user_id', userId).in('expense_id', expenseIds)
+      const affectedExpenseIds = userSplits?.map(s => s.expense_id) || []
+
+      if (affectedExpenseIds.length > 0) {
+        // Ambil data expenses yang terdampak beserta seluruh split-nya
+        const { data: expensesToRecalc } = await supabase.from('expenses')
+          .select('id, amount, expense_splits(id, user_id, share_type, share_percentage, share_amount)')
+          .in('id', affectedExpenseIds)
+
+        if (expensesToRecalc) {
+          for (const exp of expensesToRecalc) {
+            // Filter out the user being removed
+            const remainingSplits = exp.expense_splits.filter((s: any) => s.user_id !== userId)
+            if (remainingSplits.length === 0) continue
+
+            const splitType = exp.expense_splits[0]?.share_type || 'equal'
+            
+            if (splitType === 'equal') {
+              const perPerson = Math.floor(exp.amount / remainingSplits.length)
+              const remainder = exp.amount - perPerson * remainingSplits.length
+              
+              for (let i = 0; i < remainingSplits.length; i++) {
+                const s = remainingSplits[i]
+                const newAmount = i === 0 ? perPerson + remainder : perPerson
+                await supabase.from('expense_splits').update({ share_amount: newAmount }).eq('id', s.id)
+              }
+            } else if (splitType === 'percentage') {
+              const totalRemainingPct = remainingSplits.reduce((sum: number, s: any) => sum + Number(s.share_percentage), 0)
+              if (totalRemainingPct > 0) {
+                const amounts = remainingSplits.map((s: any) => {
+                  const newPct = (Number(s.share_percentage) / totalRemainingPct) * 100
+                  return { id: s.id, pct: newPct, amt: Math.floor(exp.amount * newPct / 100) }
+                })
+                
+                const totalCalculated = amounts.reduce((sum: number, a: any) => sum + a.amt, 0)
+                const diff = exp.amount - totalCalculated
+                if (amounts.length > 0) amounts[0].amt += diff
+                
+                for (const u of amounts) {
+                  await supabase.from('expense_splits').update({ share_amount: u.amt, share_percentage: u.pct }).eq('id', u.id)
+                }
+              }
+            } else if (splitType === 'exact') {
+               const removedSplit = exp.expense_splits.find((s: any) => s.user_id === userId)
+               const removedAmount = Number(removedSplit?.share_amount || 0)
+               if (removedAmount > 0 && remainingSplits.length > 0) {
+                 const firstRemaining = remainingSplits[0]
+                 await supabase.from('expense_splits').update({ share_amount: Number(firstRemaining.share_amount) + removedAmount }).eq('id', firstRemaining.id)
+               }
+            }
+          }
+        }
+      }
+
       // 2. Hapus semua split utang milik anggota ini di trip ini
       await supabase.from('expense_splits').delete().eq('user_id', userId).in('expense_id', expenseIds)
     }
