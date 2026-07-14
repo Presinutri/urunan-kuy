@@ -177,13 +177,19 @@ CREATE POLICY "trips_update_admin" ON public.trips
   );
 
 -- TRIP MEMBERS
+-- Helper function to avoid infinite recursion
+CREATE OR REPLACE FUNCTION public.get_my_trips()
+RETURNS SETOF uuid
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT trip_id FROM trip_members WHERE user_id = auth.uid();
+$$;
+
 CREATE POLICY "trip_members_select" ON public.trip_members
   FOR SELECT USING (
-    user_id = auth.uid() OR
-    EXISTS (
-      SELECT 1 FROM public.trip_members tm2
-      WHERE tm2.trip_id = trip_members.trip_id AND tm2.user_id = auth.uid()
-    )
+    trip_id IN (SELECT public.get_my_trips())
   );
 
 CREATE POLICY "trip_members_insert" ON public.trip_members
