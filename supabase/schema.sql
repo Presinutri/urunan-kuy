@@ -188,9 +188,7 @@ AS $$
 $$;
 
 CREATE POLICY "trip_members_select" ON public.trip_members
-  FOR SELECT USING (
-    trip_id IN (SELECT public.get_my_trips())
-  );
+  FOR SELECT USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "trip_members_insert" ON public.trip_members
   FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
@@ -199,13 +197,8 @@ CREATE POLICY "trip_members_delete_own" ON public.trip_members
   FOR DELETE USING (user_id = auth.uid());
 
 -- EXPENSES: trip members can see/add
-CREATE POLICY "expenses_select_member" ON public.expenses
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.trip_members
-      WHERE trip_id = expenses.trip_id AND user_id = auth.uid()
-    )
-  );
+CREATE POLICY "expenses_select" ON public.expenses
+  FOR SELECT USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "expenses_insert_member" ON public.expenses
   FOR INSERT WITH CHECK (
@@ -235,13 +228,7 @@ CREATE POLICY "expenses_delete_member" ON public.expenses
 
 -- EXPENSE SPLITS
 CREATE POLICY "expense_splits_select" ON public.expense_splits
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.expenses e
-      INNER JOIN public.trip_members tm ON e.trip_id = tm.trip_id
-      WHERE e.id = expense_splits.expense_id AND tm.user_id = auth.uid()
-    )
-  );
+  FOR SELECT USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "expense_splits_insert" ON public.expense_splits
   FOR INSERT WITH CHECK (
@@ -262,13 +249,8 @@ CREATE POLICY "expense_splits_delete" ON public.expense_splits
   );
 
 -- SETTLEMENTS
-CREATE POLICY "settlements_select_member" ON public.settlements
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.trip_members
-      WHERE trip_id = settlements.trip_id AND user_id = auth.uid()
-    )
-  );
+CREATE POLICY "settlements_select" ON public.settlements
+  FOR SELECT USING (auth.uid() IS NOT NULL);
 
 CREATE POLICY "settlements_insert_member" ON public.settlements
   FOR INSERT WITH CHECK (
