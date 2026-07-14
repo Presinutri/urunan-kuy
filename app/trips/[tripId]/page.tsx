@@ -8,7 +8,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, Plus, Users, Receipt, Scale, CheckCircle2,
   Share2, History, Settings, ChevronRight, Copy, Check,
-  Loader2, Clock, TrendingUp
+  Loader2, Clock, TrendingUp, X
 } from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
 import Avatar from '@/components/Avatar'
@@ -31,6 +31,7 @@ export default function TripDetailPage() {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [removingMember, setRemovingMember] = useState<string | null>(null)
 
   useEffect(() => {
     loadData()
@@ -108,6 +109,20 @@ export default function TripDetailPage() {
     await navigator.clipboard.writeText(link)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function handleRemoveMember(userId: string) {
+    if (!confirm('Keluarkan anggota ini dari trip? Pengeluaran yang sudah mereka bayar atau utang mereka akan tetap ada di database, pastikan untuk menghapus pengeluarannya juga jika diperlukan.')) return;
+    
+    setRemovingMember(userId)
+    const { error } = await supabase.from('trip_members').delete().eq('trip_id', tripId).eq('user_id', userId)
+    
+    if (error) {
+      alert('Gagal mengeluarkan anggota: ' + error.message)
+    } else {
+      setMembers(members.filter(m => m.user_id !== userId))
+    }
+    setRemovingMember(null)
   }
 
   const CATEGORY_ICONS: Record<string, string> = {
@@ -260,8 +275,35 @@ export default function TripDetailPage() {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
             {members.map(member => (
-              <div key={member.user_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+              <div key={member.user_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem', position: 'relative' }}>
                 <Avatar profile={member.profile} size="md" />
+                
+                {isAdmin && member.user_id !== currentUserId && (
+                  <button 
+                    onClick={() => handleRemoveMember(member.user_id)}
+                    disabled={removingMember === member.user_id}
+                    style={{
+                      position: 'absolute',
+                      top: '-4px',
+                      right: '-4px',
+                      background: 'var(--color-danger)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '18px',
+                      height: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      padding: 0
+                    }}
+                    title="Keluarkan anggota"
+                  >
+                    {removingMember === member.user_id ? <Loader2 size={10} className="animate-spin" /> : <X size={12} />}
+                  </button>
+                )}
+
                 <span style={{ fontSize: '0.72rem', color: 'var(--color-text-secondary)', maxWidth: '56px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {member.profile?.name || 'User'}
                 </span>

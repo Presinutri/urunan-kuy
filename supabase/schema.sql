@@ -196,6 +196,14 @@ CREATE POLICY "trip_members_insert" ON public.trip_members
 CREATE POLICY "trip_members_delete_own" ON public.trip_members
   FOR DELETE USING (user_id = auth.uid());
 
+CREATE POLICY "trip_members_delete_admin" ON public.trip_members
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM public.trip_members tm
+      WHERE tm.trip_id = trip_members.trip_id AND tm.user_id = auth.uid() AND tm.role = 'admin'
+    )
+  );
+
 -- EXPENSES: trip members can see/add
 CREATE POLICY "expenses_select" ON public.expenses
   FOR SELECT USING (auth.uid() IS NOT NULL);
