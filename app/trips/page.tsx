@@ -47,11 +47,23 @@ export default function TripsPage() {
       sessionStorage.removeItem('pendingInvite')
       const { data: tripToJoin } = await supabase.from('trips').select('id').eq('invite_code', pendingInvite).single()
       if (tripToJoin) {
-        await supabase.from('trip_members').insert({
+        // Fallback: Ensure profile exists
+        const { data: profileExists } = await supabase.from('profiles').select('id').eq('id', user.id).single()
+        if (!profileExists) {
+          await supabase.from('profiles').insert({
+            id: user.id,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            email: user.email,
+            avatar_url: user.user_metadata?.avatar_url
+          })
+        }
+      
+        const { error: insertError } = await supabase.from('trip_members').insert({
           trip_id: tripToJoin.id,
           user_id: user.id,
           role: 'member'
         })
+        if (insertError) console.error("Pending invite join failed:", insertError)
         router.push(`/trips/${tripToJoin.id}`)
         return
       }

@@ -61,14 +61,31 @@ export default function JoinPage() {
       if (isMember) {
         setAlreadyMember(true)
       } else {
+        // Fallback: Ensure profile exists before inserting to trip_members
+        const { data: profileExists } = await supabase.from('profiles').select('id').eq('id', currentUser.id).single()
+        if (!profileExists) {
+          await supabase.from('profiles').insert({
+            id: currentUser.id,
+            name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'User',
+            email: currentUser.email,
+            avatar_url: currentUser.user_metadata?.avatar_url
+          })
+        }
+
         // Auto-join right now!
-        await supabase.from('trip_members').insert({
+        const { error: insertError } = await supabase.from('trip_members').insert({
           trip_id: tripData.id,
           user_id: currentUser.id,
           role: 'member'
         })
-        setAlreadyMember(true)
-        setMembers([...formattedMembers, { user_id: currentUser.id, profile: { name: currentUser.user_metadata?.name || 'Kamu' } }])
+        
+        if (insertError) {
+          console.error("Auto-join failed:", insertError)
+          setError(`Gagal gabung trip: ${insertError.message}`)
+        } else {
+          setAlreadyMember(true)
+          setMembers([...formattedMembers, { user_id: currentUser.id, profile: { name: currentUser.user_metadata?.name || 'Kamu' } }])
+        }
       }
     }
 
