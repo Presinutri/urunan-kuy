@@ -213,40 +213,42 @@ export default function TripDetailPage() {
         </div>
 
         {/* Invite Link */}
-        <div className="card" style={{ marginBottom: '1.25rem', animation: 'fadeInUp 0.3s ease' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>
-              <Share2 size={16} style={{ color: 'var(--color-primary)' }} />
-              Invite Anggota
+        {isAdmin && (
+          <div className="card" style={{ marginBottom: '1.25rem', animation: 'fadeInUp 0.3s ease' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>
+                <Share2 size={16} style={{ color: 'var(--color-primary)' }} />
+                Invite Anggota
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{
+                flex: 1,
+                background: 'var(--color-bg-input)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '8px',
+                padding: '0.6rem 0.875rem',
+                fontSize: '0.78rem',
+                color: 'var(--color-text-muted)',
+                fontFamily: 'monospace',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {typeof window !== 'undefined' ? `${window.location.origin}/join/${trip.invite_code}` : `/join/${trip.invite_code}`}
+              </div>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={copyInviteLink}
+                id="btn-copy-invite"
+                style={{ flexShrink: 0 }}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+                {copied ? 'Tersalin!' : 'Copy'}
+              </button>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <div style={{
-              flex: 1,
-              background: 'var(--color-bg-input)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '8px',
-              padding: '0.6rem 0.875rem',
-              fontSize: '0.78rem',
-              color: 'var(--color-text-muted)',
-              fontFamily: 'monospace',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}>
-              {typeof window !== 'undefined' ? `${window.location.origin}/join/${trip.invite_code}` : `/join/${trip.invite_code}`}
-            </div>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={copyInviteLink}
-              id="btn-copy-invite"
-              style={{ flexShrink: 0 }}
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? 'Tersalin!' : 'Copy'}
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Members */}
         <div className="card" style={{ marginBottom: '1.25rem', animation: 'fadeInUp 0.3s ease' }}>
