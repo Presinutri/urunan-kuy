@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { MapPin, Users, Calculator, Zap, ArrowRight, CheckCircle } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export default function LandingPage() {
   return (
@@ -99,113 +99,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Features */}
       <div style={{ padding: '1.5rem', maxWidth: '480px', margin: '0 auto' }}>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: 700, textAlign: 'center', marginBottom: '1.25rem' }}>
-          Kenapa UrunanKuy?
-        </h2>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {[
-            {
-              icon: <Zap size={20} />,
-              title: 'Input cepat saat on-the-go',
-              desc: 'Tambah expense dalam <15 detik. Didesain untuk dipakai di jalan, bukan di depan laptop.',
-              color: '#f59e0b',
-            },
-            {
-              icon: <Calculator size={20} />,
-              title: 'Debt simplification otomatis',
-              desc: 'Algoritma minimisasi transaksi — kalau 5 orang perlu settle, bukan berarti 20 transfer. Mungkin cukup 4.',
-              color: '#14b8a6',
-            },
-            {
-              icon: <Users size={20} />,
-              title: 'Join trip via link',
-              desc: 'Kirim invite link ke teman. Mereka langsung join tanpa perlu install apapun.',
-              color: '#8b5cf6',
-            },
-            {
-              icon: <MapPin size={20} />,
-              title: 'Settle up trip selesai',
-              desc: 'Begitu trip kelar, ada flow jelas untuk kelarin semua utang sekaligus — bukan saldo ngambang tanpa batas waktu.',
-              color: '#ef4444',
-            },
-          ].map(feat => (
-            <div key={feat.title} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: `${feat.color}20`,
-                border: `1px solid ${feat.color}30`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: feat.color,
-                flexShrink: 0,
-              }}>
-                {feat.icon}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.25rem' }}>{feat.title}</div>
-                <div style={{ fontSize: '0.83rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>{feat.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* vs Splitwise */}
-        <div style={{ marginTop: '2rem' }}>
-          <h2 style={{ fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', marginBottom: '1rem' }}>
-            vs Splitwise Free
-          </h2>
-          <div className="card">
-            {[
-              { label: 'Entri expense per hari', urunan: 'Tanpa batas ✓', splitwise: '~3/hari ✗' },
-              { label: 'Ads', urunan: 'Tidak ada ✓', splitwise: 'Ada ✗' },
-              { label: 'Debt simplification', urunan: 'Gratis ✓', splitwise: 'Gratis ✓' },
-              { label: 'Settle up per trip', urunan: 'Ada ✓', splitwise: 'Tidak ada ✗' },
-              { label: 'Join via link', urunan: 'Mudah ✓', splitwise: 'Perlu daftar ✗' },
-            ].map((row, i) => (
-              <div key={row.label} style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '0.5rem',
-                padding: '0.75rem 0',
-                borderBottom: i < 4 ? '1px solid var(--color-border-subtle)' : 'none',
-                fontSize: '0.8rem',
-                alignItems: 'center',
-              }}>
-                <span style={{ color: 'var(--color-text-secondary)', fontWeight: 500 }}>{row.label}</span>
-                <span style={{ color: 'var(--color-success)', fontWeight: 600, textAlign: 'center' }}>{row.urunan}</span>
-                <span style={{ color: 'var(--color-danger)', fontWeight: 600, textAlign: 'center' }}>{row.splitwise}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Final CTA */}
-        <div style={{
-          marginTop: '2.5rem',
-          textAlign: 'center',
-          padding: '2rem 1.5rem',
-          background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(239,68,68,0.08))',
-          borderRadius: '20px',
-          border: '1px solid rgba(245,158,11,0.15)',
-        }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🌏</div>
-          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-            Siap untuk trip berikutnya?
-          </h2>
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1.25rem' }}>
-            Buat trip, invite circle, dan mulai catat pengeluaran — gratis, tanpa batas.
-          </p>
-          <Link href="/login" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-            Buat Trip Pertama <ArrowRight size={16} />
-          </Link>
-        </div>
-
         <p style={{
           textAlign: 'center',
           fontSize: '0.75rem',
