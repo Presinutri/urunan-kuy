@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2, Mail, Lock, Eye, EyeOff, ArrowRight, User } from 'lucide-react'
@@ -17,7 +17,14 @@ function LoginForm() {
   const [error, setError] = useState('')
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/trips'
+  const errorParam = searchParams.get('error')
   const supabase = createClient()
+
+  useEffect(() => {
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam))
+    }
+  }, [errorParam])
 
   async function handleGoogleLogin() {
     setLoading(true)
