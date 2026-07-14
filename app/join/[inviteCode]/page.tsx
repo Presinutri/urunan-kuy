@@ -57,7 +57,7 @@ export default function JoinPage() {
 
     // Check if already member & Auto-Join if logged in
     if (currentUser) {
-      const isMember = formattedMembers.some(m => m.user_id === currentUser.id)
+      const isMember = formattedMembers.some((m: any) => m.user_id === currentUser.id)
       if (isMember) {
         setAlreadyMember(true)
       } else {
