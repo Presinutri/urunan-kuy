@@ -45,18 +45,31 @@ export default function JoinPage() {
     }
     setTrip(tripData)
 
-    // Load members
+    // Load members via secure RPC to bypass RLS for non-members
     const { data: membersData } = await supabase
-      .from('trip_members')
-      .select('*, profile:profiles(*)')
-      .eq('trip_id', tripData.id)
+      .rpc('get_trip_members_by_invite', { invite_code_param: inviteCode })
 
-    setMembers(membersData || [])
+    const formattedMembers = (membersData || []).map((m: any) => ({
+      user_id: m.user_id,
+      profile: { name: m.name, avatar_url: m.avatar_url }
+    }))
+    setMembers(formattedMembers)
 
-    // Check if already member
+    // Check if already member & Auto-Join if logged in
     if (currentUser) {
-      const isMember = membersData?.some(m => m.user_id === currentUser.id)
-      setAlreadyMember(!!isMember)
+      const isMember = formattedMembers.some(m => m.user_id === currentUser.id)
+      if (isMember) {
+        setAlreadyMember(true)
+      } else {
+        // Auto-join right now!
+        await supabase.from('trip_members').insert({
+          trip_id: tripData.id,
+          user_id: currentUser.id,
+          role: 'member'
+        })
+        setAlreadyMember(true)
+        setMembers([...formattedMembers, { user_id: currentUser.id, profile: { name: currentUser.user_metadata?.name || 'Kamu' } }])
+      }
     }
 
     setLoading(false)

@@ -41,6 +41,22 @@ export default function TripsPage() {
 
     if (profile) setUserName(profile.name)
 
+    // Process pending invite if any
+    const pendingInvite = sessionStorage.getItem('pendingInvite')
+    if (pendingInvite) {
+      sessionStorage.removeItem('pendingInvite')
+      const { data: tripToJoin } = await supabase.from('trips').select('id').eq('invite_code', pendingInvite).single()
+      if (tripToJoin) {
+        await supabase.from('trip_members').insert({
+          trip_id: tripToJoin.id,
+          user_id: user.id,
+          role: 'member'
+        })
+        router.push(`/trips/${tripToJoin.id}`)
+        return
+      }
+    }
+
     // Get trips with member count
     const { data: memberRows } = await supabase
       .from('trip_members')
