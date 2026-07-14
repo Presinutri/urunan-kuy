@@ -112,15 +112,31 @@ export default function TripDetailPage() {
   }
 
   async function handleRemoveMember(userId: string) {
-    if (!confirm('Keluarkan anggota ini dari trip? Pengeluaran yang sudah mereka bayar atau utang mereka akan tetap ada di database, pastikan untuk menghapus pengeluarannya juga jika diperlukan.')) return;
+    if (!confirm('Keluarkan anggota ini dari trip? Semua pengeluaran yang mereka bayar dan tagihan (split) mereka akan ikut terhapus permanen!')) return;
     
     setRemovingMember(userId)
+
+    // 1. Ambil semua expense_id di trip ini
+    const { data: tripExpenses } = await supabase.from('expenses').select('id').eq('trip_id', tripId)
+    const expenseIds = tripExpenses?.map(e => e.id) || []
+
+    if (expenseIds.length > 0) {
+      // 2. Hapus semua split utang milik anggota ini di trip ini
+      await supabase.from('expense_splits').delete().eq('user_id', userId).in('expense_id', expenseIds)
+    }
+
+    // 3. Hapus semua pengeluaran yang pernah dibayar oleh anggota ini
+    await supabase.from('expenses').delete().eq('trip_id', tripId).eq('paid_by', userId)
+
+    // 4. Keluarkan dari trip
     const { error } = await supabase.from('trip_members').delete().eq('trip_id', tripId).eq('user_id', userId)
     
     if (error) {
       alert('Gagal mengeluarkan anggota: ' + error.message)
     } else {
       setMembers(members.filter(m => m.user_id !== userId))
+      // Refresh data agar perhitungan saldo dan pengeluaran terbaru terupdate
+      loadData()
     }
     setRemovingMember(null)
   }
