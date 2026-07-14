@@ -71,10 +71,7 @@ export default function LandingPage() {
         {/* CTA Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '320px', margin: '0 auto' }}>
           <Link href="/login" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
-            Mulai Gratis <ArrowRight size={18} />
-          </Link>
-          <Link href="/login" className="btn btn-secondary" style={{ textDecoration: 'none' }}>
-            Sudah punya akun? Masuk
+            Mulai <ArrowRight size={18} />
           </Link>
         </div>
 
