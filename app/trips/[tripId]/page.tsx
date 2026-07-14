@@ -324,8 +324,8 @@ export default function TripDetailPage() {
           )}
         </div>
 
-        {/* Settle Trip (admin only, active trip) */}
-        {isAdmin && trip.status === 'active' && (
+        {/* Settle Trip (Visible to everyone for transparency) */}
+        {trip.status === 'active' && (
           <div style={{ marginTop: '1.5rem', animation: 'fadeInUp 0.3s ease' }}>
             <Link href={`/trips/${tripId}/settle`} style={{ textDecoration: 'none' }}>
               <div style={{
@@ -340,8 +340,8 @@ export default function TripDetailPage() {
               }}>
                 <CheckCircle2 size={24} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.15rem' }}>Selesaikan Trip</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>Kelarin semua utang dan tutup trip ini</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.15rem' }}>{isAdmin ? 'Selesaikan Trip' : 'Rincian Patungan'}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{isAdmin ? 'Kelarin semua utang dan tutup trip ini' : 'Lihat siapa yang harus bayar ke siapa'}</div>
                 </div>
                 <ChevronRight size={18} style={{ color: 'var(--color-text-muted)', marginLeft: 'auto' }} />
               </div>
